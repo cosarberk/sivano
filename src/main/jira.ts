@@ -238,7 +238,7 @@ function buildDescription(e: AnalysisEntry): string {
     `*Sürüm:* v${e.version}`,
     `*Tür:* ${statusTr(e.status)}`
   ]
-  if (e.url) lines.push(`*Konum:* [Repoda aç|${e.url}]`)
+  if (e.url) lines.push(`*Commit:* [Commit'i aç|${e.url}]`)
   if (e.note?.trim()) lines.push(`*Not:* ${esc(e.note.trim())}`)
   lines.push('', wikiDiff(e.old, e.new))
   return lines.join('\n')

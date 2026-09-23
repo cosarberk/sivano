@@ -66,8 +66,8 @@ function webBaseFromOrigin(origin: string): string | null {
   return null
 }
 
-/** Dosyanın commit'teki kalıcı bağlantısı (silinmişse commit sayfası). */
-function fileUrl(web: string, commit: string, path: string, deleted: boolean): string {
+/** Commit'in kalıcı bağlantısı (değişikliğin kendisini gösterir). */
+function commitUrl(web: string, commit: string): string {
   let host = ''
   try {
     host = new URL(web).hostname
@@ -75,9 +75,7 @@ function fileUrl(web: string, commit: string, path: string, deleted: boolean): s
     /* geç */
   }
   const isGithub = host === 'github.com'
-  const enc = path.split('/').map(encodeURIComponent).join('/')
-  if (deleted) return isGithub ? `${web}/commit/${commit}` : `${web}/-/commit/${commit}`
-  return isGithub ? `${web}/blob/${commit}/${enc}` : `${web}/-/blob/${commit}/${enc}`
+  return isGithub ? `${web}/commit/${commit}` : `${web}/-/commit/${commit}`
 }
 
 async function countBehindAhead(
@@ -276,7 +274,7 @@ export function registerRepoIpc(): void {
         if (web) {
           for (const a of analyses) {
             const h = commitByPath[a.path]
-            if (h) a.url = fileUrl(web, h, a.path, a.status === 'deleted')
+            if (h) a.url = commitUrl(web, h)
           }
         }
 
