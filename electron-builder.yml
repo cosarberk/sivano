@@ -30,9 +30,10 @@ linux:
       filter: ['**/*']
 
 win:
+  # ZIP = kurulumsuz portable (NSIS/installer gerekmez); aç-çalıştır.
+  # nsis/portable istenirse sistemde NSIS 3 kurup USE_SYSTEM_NSIS=true ile eklenebilir.
   target:
-    - nsis
-    - portable
+    - zip
   artifactName: ${productName}-${version}-${arch}.${ext}
   extraResources:
     - from: resources/bin/win

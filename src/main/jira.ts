@@ -176,10 +176,26 @@ function buildRows(oldText: string, newText: string): { rows: DiffRow[]; adds: n
   return { rows, adds, dels }
 }
 
-/** 4 kolonlu (# | Eski | # | Yeni) kelime bazlı diff — satır no + / - işaretli. */
+const CONTEXT = 3 // değişen satır etrafında gösterilecek bağlam satırı sayısı
+
+/**
+ * 4 kolonlu (# | Eski | # | Yeni) kelime bazlı diff — SADECE değişen bölümler
+ * (+ birkaç satır bağlam). Değişmeyen uzun bloklar "N satır atlandı" ile geçilir.
+ */
 function wikiDiff(oldText: string, newText: string): string {
   if (!oldText && !newText) return '_(içerik yok)_'
   const { rows, adds, dels } = buildRows(oldText, newText)
+
+  // Hangi satırlar gösterilecek: her değişikliğin CONTEXT komşuları.
+  const keep = new Array(rows.length).fill(false)
+  rows.forEach((r, i) => {
+    if (r.type !== 'eq') {
+      for (let j = Math.max(0, i - CONTEXT); j <= Math.min(rows.length - 1, i + CONTEXT); j++) {
+        keep[j] = true
+      }
+    }
+  })
+
   const cell = (s: string): string => (s.trim() === '' ? ' ' : s)
   const out: string[] = [
     `{color:#1e7e34}+${adds} eklendi{color}   {color:#c0392b}-${dels} çıkarıldı{color}`,
@@ -187,17 +203,30 @@ function wikiDiff(oldText: string, newText: string): string {
     '||#||Eski||#||Yeni||'
   ]
   let count = 0
-  for (const r of rows) {
+  let prevKept = false
+  let skipped = 0
+  for (let i = 0; i < rows.length; i++) {
+    if (!keep[i]) {
+      skipped++
+      prevKept = false
+      continue
+    }
+    if (!prevKept && skipped > 0) {
+      out.push(`| |{{⋯ ${skipped} satır atlandı ⋯}}| | |`)
+      skipped = 0
+    }
     if (count >= MAX_ROWS) {
       out.push('| |...| |...|')
       break
     }
+    const r = rows[i]
     const lnL =
       r.oldNo !== null ? (r.type === 'del' || r.type === 'chg' ? `${r.oldNo} -` : `${r.oldNo}`) : ' '
     const lnR =
       r.newNo !== null ? (r.type === 'add' || r.type === 'chg' ? `${r.newNo} +` : `${r.newNo}`) : ' '
     out.push(`|${lnL}|${cell(r.left)}|${lnR}|${cell(r.right)}|`)
     count++
+    prevKept = true
   }
   return out.join('\n')
 }
