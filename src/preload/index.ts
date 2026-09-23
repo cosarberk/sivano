@@ -111,6 +111,12 @@ const api = {
   notify: {
     show: (title: string, body: string): Promise<void> =>
       ipcRenderer.invoke('notify:show', title, body)
+  },
+  diag: {
+    check: (
+      tool: 'git' | 'pandoc' | 'pdftotext'
+    ): Promise<{ ok: boolean; version?: string; source: 'bundled' | 'system'; error?: string }> =>
+      ipcRenderer.invoke('diag:check', tool)
   }
 }
 

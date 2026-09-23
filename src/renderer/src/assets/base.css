@@ -178,12 +178,20 @@ body {
   animation: fadeIn 0.7s ease 0.8s forwards;
 }
 
-.splash__progress {
+.splash__boot {
   position: absolute;
   left: 50%;
-  bottom: 46px;
+  bottom: 40px;
   transform: translateX(-50%);
-  width: 180px;
+  z-index: 2;
+  width: min(460px, 86vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.splash__progress {
+  width: 100%;
   height: 3px;
   border-radius: 3px;
   background: color-mix(in srgb, var(--text-faint) 30%, transparent);
@@ -195,7 +203,62 @@ body {
   height: 100%;
   width: 0;
   background: var(--accent);
-  animation: fill 2.6s linear forwards;
+  transition: width 0.3s ease;
+}
+
+.splash__log {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 11.5px;
+}
+
+.boot {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text-dim);
+}
+
+.boot__ic {
+  width: 1em;
+  text-align: center;
+  color: var(--text-faint);
+}
+
+.boot--ok .boot__ic {
+  color: var(--success);
+}
+
+.boot--warn,
+.boot--warn .boot__ic {
+  color: var(--danger);
+}
+
+.boot__label {
+  flex-shrink: 0;
+}
+
+.boot__detail {
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.splash__warn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+
+.splash__warn p {
+  font-size: 12.5px;
+  color: var(--text-dim);
 }
 
 @keyframes fadeIn {

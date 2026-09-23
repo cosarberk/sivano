@@ -9,6 +9,12 @@ type Dict = Record<string, string>
 
 const tr: Dict = {
   'app.tagline': 'Doküman versiyonlama',
+  'splash.checking': 'kontrol ediliyor',
+  'splash.missing': 'bulunamadı',
+  'splash.bundled': 'gömülü',
+  'splash.system': 'sistem',
+  'splash.warnNote': 'Bazı araçlar bulunamadı — ilgili özellikler sınırlı çalışabilir.',
+  'splash.continue': 'Devam et',
   'landing.subtitle': 'Ne yapmak istersin?',
   'landing.pickProject': 'Proje seç',
   'landing.noProject': 'Proje seçili değil',
@@ -172,6 +178,12 @@ const tr: Dict = {
 
 const en: Dict = {
   'app.tagline': 'Document versioning',
+  'splash.checking': 'checking',
+  'splash.missing': 'not found',
+  'splash.bundled': 'bundled',
+  'splash.system': 'system',
+  'splash.warnNote': 'Some tools were not found — related features may be limited.',
+  'splash.continue': 'Continue',
   'landing.subtitle': 'What would you like to do?',
   'landing.pickProject': 'Choose project',
   'landing.noProject': 'No project selected',

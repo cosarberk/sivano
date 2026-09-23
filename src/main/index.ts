@@ -1,7 +1,12 @@
 import { app, shell, BrowserWindow, ipcMain, dialog, Notification } from 'electron'
 import { join, extname, dirname } from 'path'
 import { promises as fsp } from 'fs'
+import { execFile } from 'child_process'
+import { promisify } from 'util'
+import { resolveBin, resolveGit } from './bin'
 import { registerConnectionsIpc } from './connections'
+
+const execFileP = promisify(execFile)
 import { registerGitIpc } from './git'
 import { registerFsManagerIpc } from './fsmanager'
 import { registerRepoIpc } from './repo'
@@ -65,6 +70,25 @@ function registerIpc(): void {
     platform: process.platform,
     arch: process.arch
   }))
+
+  // Açılış tanılaması: bir aracın (git/pandoc/pdftotext) varlığı + sürümü + kaynağı.
+  ipcMain.handle('diag:check', async (_event, tool: 'git' | 'pandoc' | 'pdftotext') => {
+    const bin = tool === 'git' ? resolveGit() : resolveBin(tool)
+    const source = /[\\/]/.test(bin) ? 'bundled' : 'system'
+    const args = tool === 'pdftotext' ? ['-v'] : ['--version']
+    try {
+      const { stdout, stderr } = await execFileP(bin, args, { maxBuffer: 1024 * 1024 })
+      const line = ((stdout || stderr || '').split('\n')[0] || '').trim()
+      return { ok: true, version: line, source }
+    } catch (e) {
+      const err = e as NodeJS.ErrnoException & { stdout?: string; stderr?: string }
+      if (err?.code === 'ENOENT') return { ok: false, source }
+      // pdftotext -v sıfırdan farklı çıkış kodu verir ama sürümü yazdırır → başarılı say.
+      const line = ((err?.stderr || err?.stdout || '').split('\n')[0] || '').trim()
+      if (line) return { ok: true, version: line, source }
+      return { ok: false, source, error: String(err?.message ?? err) }
+    }
+  })
 
   // İşletim sisteminin kendi bildirim sistemi (app-içi değil).
   ipcMain.handle('notify:show', (_event, title: string, body: string) => {
