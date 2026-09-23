@@ -1,6 +1,12 @@
 node_modules
 dist
 out
+out-tsc
+release
 *.log
 .DS_Store
 .vite
+
+# Gömülü ikililer repoya girmez (build makinesinde indirilir), klasörler kalır
+resources/bin/*/*
+!resources/bin/*/.gitkeep

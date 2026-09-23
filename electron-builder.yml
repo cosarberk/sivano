@@ -1,0 +1,54 @@
+appId: com.relteco.sivano
+productName: Sivano
+copyright: © Relteco
+
+directories:
+  output: release
+  buildResources: build
+
+# Dev/kaynak dosyalarını paketten dışla; out/** ve prod node_modules dahil kalır.
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!{release,dist,out-tsc}/*'
+  - '!electron-builder.yml'
+
+# Gömülü ikililer (pandoc/git/pdftotext) — asar dışında, resources/bin/<platform> altına.
+# Her platform yalnızca kendi ikililerini alır (şişmesin).
+linux:
+  target:
+    - AppImage
+  category: Office
+  artifactName: ${productName}-${version}.${ext}
+  extraResources:
+    - from: resources/bin/linux
+      to: bin/linux
+      filter: ['**/*']
+
+win:
+  target:
+    - nsis
+    - portable
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  extraResources:
+    - from: resources/bin/win
+      to: bin/win
+      filter: ['**/*']
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.productivity
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  extraResources:
+    - from: resources/bin/mac
+      to: bin/mac
+      filter: ['**/*']
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

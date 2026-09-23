@@ -1,5 +1,6 @@
-import { app, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { execFile, spawn } from 'child_process'
+import { resolveBin, resolveGit } from './bin'
 import { promisify } from 'util'
 import { promises as fsp, existsSync } from 'fs'
 import { join, extname, dirname } from 'path'
@@ -17,26 +18,6 @@ export interface FileDiff {
   old?: string
   new?: string
   converter?: string
-}
-
-/** Gömülü ikili yolunu çözer; yoksa sistem PATH'ine düşer (dev). */
-function binPath(name: string): string {
-  const platform =
-    process.platform === 'win32' ? 'win' : process.platform === 'darwin' ? 'mac' : 'linux'
-  const exe = process.platform === 'win32' ? `${name}.exe` : name
-  const candidates = [
-    join(process.resourcesPath ?? '', 'bin', platform, exe),
-    join(app.getAppPath(), 'resources', 'bin', platform, exe),
-    join(process.cwd(), 'resources', 'bin', platform, exe)
-  ]
-  for (const c of candidates) {
-    try {
-      if (existsSync(c)) return c
-    } catch {
-      /* geç */
-    }
-  }
-  return name // sistem PATH (dev)
 }
 
 const MAX = 1024 * 1024 * 64
@@ -71,7 +52,7 @@ function converterFor(ext: string): Converter | null {
     return {
       bin: 'pandoc',
       run: async (file) =>
-        (await exec(binPath('pandoc'), [file, '-t', 'gfm', '--wrap=none'], { maxBuffer: MAX }))
+        (await exec(resolveBin('pandoc'), [file, '-t', 'gfm', '--wrap=none'], { maxBuffer: MAX }))
           .stdout
     }
   }
@@ -79,7 +60,7 @@ function converterFor(ext: string): Converter | null {
     return {
       bin: 'pdftotext',
       run: async (file) =>
-        (await exec(binPath('pdftotext'), ['-layout', file, '-'], { maxBuffer: MAX })).stdout
+        (await exec(resolveBin('pdftotext'), ['-layout', file, '-'], { maxBuffer: MAX })).stdout
     }
   }
   if (XLSX_EXT.has(ext)) {
@@ -93,7 +74,7 @@ function converterFor(ext: string): Converter | null {
 function gitShowBuffer(repo: string, ref: string): Promise<Buffer | null> {
   return new Promise((resolve) => {
     const chunks: Buffer[] = []
-    const p = spawn('git', ['show', ref], { cwd: repo })
+    const p = spawn(resolveGit(), ['show', ref], { cwd: repo })
     p.stdout.on('data', (d: Buffer) => chunks.push(d))
     p.on('error', () => resolve(null))
     p.on('close', (code) => resolve(code === 0 ? Buffer.concat(chunks) : null))

@@ -3,6 +3,7 @@ import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { promises as fsp } from 'fs'
 import { join } from 'path'
+import { resolveGit } from './bin'
 
 const exec = promisify(execFile)
 
@@ -29,7 +30,7 @@ export interface Commit {
 }
 
 async function git(repo: string, args: string[]): Promise<string> {
-  const { stdout } = await exec('git', args, {
+  const { stdout } = await exec(resolveGit(), args, {
     cwd: repo,
     maxBuffer: 1024 * 1024 * 32
   })

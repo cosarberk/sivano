@@ -6,6 +6,7 @@ import { join } from 'path'
 import { getSecret, type Provider } from './connections'
 import { writeDerived, derivedPathFor, fileDiffData } from './convert'
 import { sendAnalyses, type AnalysisEntry } from './jira'
+import { resolveGit } from './bin'
 
 const exec = promisify(execFile)
 
@@ -36,7 +37,7 @@ function pad2(n: number): string {
 }
 
 async function runGit(repo: string, args: string[]): Promise<string> {
-  const { stdout } = await exec('git', args, { cwd: repo, maxBuffer: 1024 * 1024 * 32 })
+  const { stdout } = await exec(resolveGit(), args, { cwd: repo, maxBuffer: 1024 * 1024 * 32 })
   return stdout
 }
 
@@ -166,11 +167,11 @@ export function registerRepoIpc(): void {
           /* yok, klonla */
         }
 
-        await exec('git', ['clone', urlWithToken(httpUrl, cred.token), dest], {
+        await exec(resolveGit(), ['clone', urlWithToken(httpUrl, cred.token), dest], {
           maxBuffer: 1024 * 1024 * 64
         })
         // Token'ı .git/config'de bırakma — temiz URL'ye çevir (push'ta yeniden enjekte edilecek).
-        await exec('git', ['remote', 'set-url', 'origin', httpUrl], { cwd: dest })
+        await exec(resolveGit(), ['remote', 'set-url', 'origin', httpUrl], { cwd: dest })
         return { ok: true, path: dest }
       } catch (e) {
         return { ok: false, error: e instanceof Error ? e.message : String(e) }
